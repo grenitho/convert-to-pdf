@@ -184,7 +184,7 @@ button[type="submit"]:disabled {
     bottom: 15px;
     right: 20px;
     font-size: 13px;
-    color: #7f8c8d;
+    color: #2c3e50; /* Biru tua */
     font-style: italic;
     letter-spacing: 0.5px;
     opacity: 0.8;
