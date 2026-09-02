@@ -1,0 +1,17 @@
+# Dependencies
+node_modules/
+
+# Environment Variables (SENSITIVE - DO NOT COMMIT)
+.env
+
+# Temporary Files (Uploads & Converted results)
+tmp/
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+
+# OS specific files
+.DS_Store
+Thumbs.db

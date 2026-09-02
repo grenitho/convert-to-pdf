@@ -1,0 +1,24 @@
+convert-to-pdf/
+├── src/
+│   ├── config.js                 # Baca variabel dari .env
+│   ├── server.js                 # Entry point Express
+│   ├── routes/
+│   │   └── convert.js            # Endpoint POST /api/convert & GET /api/health
+│   ├── services/
+│   │   ├── queue.js              # Setup p-queue (concurrency: 1)
+│   │   └── converter.js          # Wrapper LibreOffice + tree-kill + timeout
+│   └── middleware/
+│       ├── fileValidation.js     # Multer + file-type (magic bytes)
+│       └── cleanup.js            # Fungsi hapus file setelah selesai/gagal
+├── public/
+│   ├── index.html                # UI Upload
+│   ├── style.css                 # Styling
+│   └── script.js                 # Frontend logic (fetch, loading state)
+├── tmp/                          # Dibuat otomatis oleh kode, tapi bisa di-init manual
+│   ├── uploads/                  
+│   └── converted/                
+├── .env                          # PORT, MAX_FILE_SIZE, NODE_ENV
+├── .gitignore                    # Ignore node_modules, tmp/, .env
+├── package.json                  # Dependensi proyek
+├── ecosystem.config.js           # Konfigurasi PM2
+└── nginx.conf                    # Template konfigurasi Nginx (untuk di-copy ke VPS nanti)
