@@ -12,15 +12,15 @@ const messageText = document.getElementById('messageText');
 // 2. Handle saat user memilih file
 fileInput.addEventListener('change', (e) => {
     const file = e.target.files[0];
-    
+
     if (file) {
         // Update label dengan nama file
         fileText.textContent = file.name;
         fileText.classList.add('file-selected');
-        
+
         // Enable tombol submit
         submitBtn.disabled = false;
-        
+
         // Sembunyikan pesan sebelumnya
         hideMessage();
     } else {
@@ -34,55 +34,61 @@ fileInput.addEventListener('change', (e) => {
 // 3. Handle submit form
 uploadForm.addEventListener('submit', async (e) => {
     e.preventDefault(); // Prevent default form submission
-    
+
     const file = fileInput.files[0];
     if (!file) {
         showMessage('Silakan pilih file terlebih dahulu', 'error');
         return;
     }
-    
+
     // Validasi ukuran file di frontend (sekadar UX, validasi sebenarnya di backend)
-    const maxSize = 25 * 1024 * 1024; // 25MB
+    const maxSize = 40 * 1024 * 1024; // 40MB
     if (file.size > maxSize) {
-        showMessage(`Ukuran file terlalu besar (${(file.size / 1024 / 1024).toFixed(2)}MB). Maksimal 25MB.`, 'error');
+        showMessage(`Ukuran file terlalu besar (${(file.size / 1024 / 1024).toFixed(2)}MB). Maksimal 40MB.`, 'error');
         return;
     }
-    
+
+    // Warning untuk file besar (>25MB)
+    if (file.size > 25 * 1024 * 1024) {
+        showMessage('⚠️ File besar (>25MB) akan membutuhkan waktu lebih lama untuk dikonversi. Mohon bersabar...', 'info');
+        // Jangan return, lanjutkan proses
+    }
+
     // Tampilkan loading state
     setLoadingState(true);
     showMessage('Mengupload dan mengkonversi file... Mohon tunggu.', 'info');
-    
+
     try {
         // Prepare FormData
         const formData = new FormData();
         formData.append('file', file);
-        
+
         // Kirim request ke backend
         const response = await fetch('/api/convert', {
             method: 'POST',
             body: formData
         });
-        
+
         // Handle response
         if (!response.ok) {
             const errorData = await response.json();
             throw new Error(errorData.error || `Server error: ${response.status}`);
         }
-        
+
         // Ambil blob dari response
         const blob = await response.blob();
-        
+
         // Extract filename dari Content-Disposition header
         const contentDisposition = response.headers.get('Content-Disposition');
         let filename = 'converted.pdf';
-        
+
         if (contentDisposition) {
             const filenameMatch = contentDisposition.match(/filename="?([^"]+)"?/);
             if (filenameMatch && filenameMatch[1]) {
                 filename = filenameMatch[1];
             }
         }
-        
+
         // Trigger download
         const url = window.URL.createObjectURL(blob);
         const a = document.createElement('a');
@@ -92,19 +98,19 @@ uploadForm.addEventListener('submit', async (e) => {
         a.click();
         window.URL.revokeObjectURL(url);
         document.body.removeChild(a);
-        
+
         // Tampilkan pesan sukses
         showMessage('File berhasil dikonversi dan diunduh!', 'success');
-        
+
         // Reset form
         fileInput.value = '';
         fileText.textContent = 'Pilih File (Maks 25MB)';
         fileText.classList.remove('file-selected');
         submitBtn.disabled = true;
-        
+
     } catch (error) {
         console.error('[Frontend] Error:', error);
-        
+
         // Handle timeout error
         if (error.name === 'AbortError') {
             showMessage('Konversi timeout. File mungkin terlalu besar atau korup. Silakan coba lagi.', 'error');
