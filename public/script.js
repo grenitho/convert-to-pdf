@@ -147,3 +147,18 @@ function showMessage(text, type = 'info') {
 function hideMessage() {
     messageArea.style.display = 'none';
 }
+
+// ==========================================
+// 7. PWA: Register Service Worker
+// ==========================================
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/sw.js')
+            .then((registration) => {
+                console.log('[PWA] Service Worker berhasil didaftarkan dengan scope:', registration.scope);
+            })
+            .catch((error) => {
+                console.warn('[PWA] Gagal mendaftarkan Service Worker:', error);
+            });
+    });
+}
