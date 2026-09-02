@@ -1,11 +1,13 @@
 <!DOCTYPE html>
 <html lang="id">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Convert to PDF</title>
     <link rel="stylesheet" href="style.css">
 </head>
+
 <body>
     <main class="container">
         <header>
@@ -17,14 +19,14 @@
             <form id="uploadForm" enctype="multipart/form-data">
                 <div class="input-group">
                     <!-- Accept attribute dibatasi hanya untuk ekstensi yang kita izini di backend -->
-                    <input type="file" id="fileInput" name="file" 
-                           accept=".doc,.docx,.odt,.rtf,.txt,.xls,.xlsx,.ods,.csv,.ppt,.pptx,.odp,.jpg,.jpeg,.png,.bmp,.gif" 
-                           required>
+                    <input type="file" id="fileInput" name="file"
+                        accept=".doc,.docx,.odt,.rtf,.txt,.xls,.xlsx,.ods,.csv,.ppt,.pptx,.odp,.jpg,.jpeg,.png,.bmp,.gif"
+                        required>
                     <label for="fileInput" id="fileLabel">
-                        <span id="fileText">Pilih File (Maks 25MB)</span>
+                        <span id="fileText">Pilih File (Maks 40MB)</span>
                     </label>
                 </div>
-                
+
                 <button type="submit" id="submitBtn" disabled>
                     <span id="btnText">Convert ke PDF</span>
                     <span id="loadingSpinner" class="spinner" style="display: none;"></span>
@@ -35,8 +37,13 @@
         <section id="messageArea" class="message-area" style="display: none;">
             <p id="messageText"></p>
         </section>
+
+        <footer class="footer-credit">
+            <p>made by grenitho &mdash; 2026</p>
+        </footer>
     </main>
 
     <script src="script.js"></script>
 </body>
+
 </html>

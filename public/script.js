@@ -25,7 +25,7 @@ fileInput.addEventListener('change', (e) => {
         hideMessage();
     } else {
         // Reset label jika file dibatalkan
-        fileText.textContent = 'Pilih File (Maks 25MB)';
+        fileText.textContent = 'Pilih File (Maks 40MB)';
         fileText.classList.remove('file-selected');
         submitBtn.disabled = true;
     }
