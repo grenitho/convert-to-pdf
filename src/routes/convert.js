@@ -55,16 +55,17 @@ router.post('/convert',
             scheduleCleanup(req, res);
 
             // 8. Kirim file PDF ke user
-            const pdfFileName = path.basename(pdfPath);
-            res.download(pdfPath, pdfFileName, (err) => {
-                if (err) {
-                    console.error('[Convert] Error saat mengirim file PDF:', err);
-                }
+            // Ambil nama asli file tanpa ekstensi, lalu tambahkan .pdf
+            const path = require('path'); // Pastikan 'path' sudah di-require di bagian atas file
+            const originalName = path.parse(req.file.originalname).name;
+            const pdfFilename = `${originalName}.pdf`;
 
-                // 9. Panggil cleanup langsung di callback (lebih andal daripada event listener)
-                // Ini memastikan file dihapus SETELAH response selesai dikirim
-                const { cleanupFiles } = require('../middleware/cleanup');
-                cleanupFiles(req);
+            // Kirim file PDF ke user dengan nama yang sudah disesuaikan
+            res.download(outputPdfPath, pdfFilename, (err) => {
+                if (err) {
+                    console.error('[Route] Error saat mengirim file:', err);
+                    // ... logic error (biarkan kode error handling Anda yang lain tetap di sini) ...
+                }
             });
 
         } catch (error) {
