@@ -1,5 +1,5 @@
 const express = require('express');
-const path = require('path');
+const path = require('path'); // Sudah di-require di sini
 const fs = require('fs');
 const router = express.Router();
 
@@ -54,17 +54,16 @@ router.post('/convert',
             // 7. Jadwalkan cleanup (hapus file setelah response selesai)
             scheduleCleanup(req, res);
 
-            // 8. Kirim file PDF ke user
+            // 8. Kirim file PDF ke user DENGAN NAMA ASLI
             // Ambil nama asli file tanpa ekstensi, lalu tambahkan .pdf
-            const path = require('path'); // Pastikan 'path' sudah di-require di bagian atas file
-            const originalName = path.parse(req.file.originalname).name;
+            const originalName = path.parse(inputFile.originalname).name;
             const pdfFilename = `${originalName}.pdf`;
 
-            // Kirim file PDF ke user dengan nama yang sudah disesuaikan
-            res.download(outputPdfPath, pdfFilename, (err) => {
+            // PERBAIKAN: Gunakan variabel 'pdfPath', bukan 'outputPdfPath'
+            res.download(pdfPath, pdfFilename, (err) => {
                 if (err) {
                     console.error('[Route] Error saat mengirim file:', err);
-                    // ... logic error (biarkan kode error handling Anda yang lain tetap di sini) ...
+                    // Cleanup tetap akan berjalan karena scheduleCleanup sudah dipanggil
                 }
             });
 
