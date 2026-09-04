@@ -668,3 +668,41 @@ button[type="submit"]:disabled {
 .progress-bar-fill.animating {
     animation: progressPulse 1.5s ease-in-out infinite;
 }
+
+/* =========================================
+   15. Auto Delete Timer (NEW)
+   ========================================= */
+.delete-timer {
+    margin-top: 15px;
+    padding: 12px 15px;
+    background-color: var(--info-bg);
+    border: 1px solid var(--info-border);
+    border-radius: 6px;
+    display: none; /* Hidden by default */
+    align-items: center;
+    gap: 10px;
+    font-size: 13px;
+    color: var(--info-color);
+    animation: fadeIn 0.3s ease;
+}
+
+.delete-timer.visible {
+    display: flex;
+}
+
+.delete-timer-icon {
+    font-size: 16px;
+    flex-shrink: 0;
+}
+
+.delete-timer-text {
+    flex: 1;
+    line-height: 1.4;
+}
+
+.delete-timer-countdown {
+    font-weight: 700;
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 14px;
+    color: var(--header-color);
+}

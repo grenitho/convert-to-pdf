@@ -13,6 +13,9 @@ const progressPercentage = document.getElementById('progressPercentage');
 const progressBarFill = document.getElementById('progressBarFill');
 const progressStatus = document.getElementById('progressStatus');
 const progressSize = document.getElementById('progressSize');
+const deleteTimer = document.getElementById('deleteTimer');
+const timerCountdown = document.getElementById('timerCountdown');
+let deleteTimerInterval = null;
 
 // 2. Handle saat user memilih file
 fileInput.addEventListener('change', (e) => {
@@ -30,7 +33,7 @@ fileInput.addEventListener('change', (e) => {
         hideMessage();
     } else {
         // Reset label jika file dibatalkan
-        fileText.textContent = 'Pilih File (Maks 40MB)';
+        fileText.textContent = 'Select File (Max 40MB)';
         fileText.classList.remove('file-selected');
         submitBtn.disabled = true;
     }
@@ -110,6 +113,9 @@ uploadForm.addEventListener('submit', (e) => {
             // Show success message
             showMessage('File successfully converted and downloaded!', 'success');
 
+            // Start auto delete timer
+            startDeleteTimer();
+
             // Save to history
             saveHistory(file.name, filename, file.size);
 
@@ -167,7 +173,7 @@ uploadForm.addEventListener('submit', (e) => {
 function setLoadingState(isLoading) {
     if (isLoading) {
         submitBtn.disabled = true;
-        btnText.textContent = 'Mengkonversi...';
+        btnText.textContent = 'Converting...';
         loadingSpinner.style.display = 'inline-block';
     } else {
         submitBtn.disabled = !fileInput.files[0]; // Enable hanya jika ada file
@@ -396,6 +402,8 @@ fileInput.addEventListener('change', (e) => {
 
         // Hide previous messages
         hideMessage();
+        // Stop previous delete timer if any
+        stopDeleteTimer();
     } else {
         // Reset label if file is cancelled
         fileText.textContent = 'Select File (Max 40MB)';
@@ -443,6 +451,7 @@ removeFileBtn.addEventListener('click', () => {
     submitBtn.disabled = true;
     hideFilePreview();
     hideMessage();
+    stopDeleteTimer();
 });
 
 // Helper: Get human-readable file type
@@ -511,7 +520,45 @@ function updateProgress(percent, status) {
 }
 
 // ==========================================
-// 12. PWA: Register Service Worker
+// 12. Auto Delete Timer Logic
+// ==========================================
+function startDeleteTimer() {
+    let timeLeft = 3600; // 60 minutes in seconds (matches cron job)
+    deleteTimer.classList.add('visible');
+
+    // Clear any existing interval
+    if (deleteTimerInterval) clearInterval(deleteTimerInterval);
+
+    updateTimerDisplay(timeLeft);
+
+    deleteTimerInterval = setInterval(() => {
+        timeLeft--;
+        if (timeLeft <= 0) {
+            clearInterval(deleteTimerInterval);
+            deleteTimerInterval = null;
+            deleteTimer.classList.remove('visible');
+        } else {
+            updateTimerDisplay(timeLeft);
+        }
+    }, 1000);
+}
+
+function stopDeleteTimer() {
+    if (deleteTimerInterval) {
+        clearInterval(deleteTimerInterval);
+        deleteTimerInterval = null;
+    }
+    deleteTimer.classList.remove('visible');
+}
+
+function updateTimerDisplay(seconds) {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    timerCountdown.textContent = `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+}
+
+// ==========================================
+// 13. PWA: Register Service Worker
 // ==========================================
 if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
