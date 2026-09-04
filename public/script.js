@@ -233,24 +233,24 @@ clearHistoryBtn.addEventListener('click', () => {
 // Save conversion to localStorage
 function saveHistory(originalName, pdfName, fileSize) {
     const history = JSON.parse(localStorage.getItem('conversionHistory') || '[]');
-    
+
     const newEntry = {
         originalName: originalName,
         pdfName: pdfName,
         fileSize: fileSize,
         timestamp: new Date().toISOString()
     };
-    
+
     // Add to beginning of array (newest first)
     history.unshift(newEntry);
-    
+
     // Keep only last 20 entries to prevent localStorage bloat
     if (history.length > 20) {
         history.splice(20);
     }
-    
+
     localStorage.setItem('conversionHistory', JSON.stringify(history));
-    
+
     // Re-render history if section is expanded
     if (historyContent.classList.contains('expanded')) {
         renderHistory();
@@ -260,26 +260,26 @@ function saveHistory(originalName, pdfName, fileSize) {
 // Render history list from localStorage
 function renderHistory() {
     const history = JSON.parse(localStorage.getItem('conversionHistory') || '[]');
-    
+
     if (history.length === 0) {
         historyList.innerHTML = '<li class="history-empty">No conversion history yet</li>';
         clearHistoryBtn.style.display = 'none';
         return;
     }
-    
+
     clearHistoryBtn.style.display = 'block';
-    
+
     historyList.innerHTML = history.map(entry => {
         const date = new Date(entry.timestamp);
-        const formattedDate = date.toLocaleDateString('en-US', { 
-            month: 'short', 
+        const formattedDate = date.toLocaleDateString('en-US', {
+            month: 'short',
             day: 'numeric',
             hour: '2-digit',
             minute: '2-digit'
         });
-        
+
         const sizeMB = (entry.fileSize / 1024 / 1024).toFixed(2);
-        
+
         return `
             <li class="history-item">
                 <div class="history-item-info">
@@ -299,7 +299,153 @@ function escapeHtml(text) {
 }
 
 // ==========================================
-// 10. PWA: Register Service Worker
+// 10. Drag & Drop + File Preview Logic
+// ==========================================
+const filePreview = document.getElementById('filePreview');
+const previewName = document.getElementById('previewName');
+const previewType = document.getElementById('previewType');
+const previewSize = document.getElementById('previewSize');
+const previewImage = document.getElementById('previewImage');
+const removeFileBtn = document.getElementById('removeFileBtn');
+
+// Prevent default drag behaviors on document
+['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+    document.body.addEventListener(eventName, preventDefaults, false);
+});
+
+function preventDefaults(e) {
+    e.preventDefault();
+    e.stopPropagation();
+}
+
+// Highlight drop area when dragging over
+['dragenter', 'dragover'].forEach(eventName => {
+    fileLabel.addEventListener(eventName, () => {
+        fileLabel.classList.add('drag-over');
+    }, false);
+});
+
+['dragleave', 'drop'].forEach(eventName => {
+    fileLabel.addEventListener(eventName, () => {
+        fileLabel.classList.remove('drag-over');
+    }, false);
+});
+
+// Handle dropped files
+fileLabel.addEventListener('drop', (e) => {
+    const dt = e.dataTransfer;
+    const files = dt.files;
+
+    if (files.length > 0) {
+        fileInput.files = files;
+        fileInput.dispatchEvent(new Event('change'));
+    }
+});
+
+// Enhanced file input change handler with preview
+fileInput.addEventListener('change', (e) => {
+    const file = e.target.files[0];
+
+    if (file) {
+        // Update label with file name
+        fileText.textContent = file.name;
+        fileText.classList.add('file-selected');
+
+        // Enable submit button
+        submitBtn.disabled = false;
+
+        // Show file preview
+        showFilePreview(file);
+
+        // Hide previous messages
+        hideMessage();
+    } else {
+        // Reset label if file is cancelled
+        fileText.textContent = 'Select File (Max 40MB)';
+        fileText.classList.remove('file-selected');
+        submitBtn.disabled = true;
+        hideFilePreview();
+    }
+});
+
+// Show file preview with details
+function showFilePreview(file) {
+    // Update preview details
+    previewName.textContent = file.name;
+    previewType.textContent = getFileTypeLabel(file.type);
+    previewSize.textContent = formatFileSize(file.size);
+
+    // Show image preview for image files
+    if (file.type.startsWith('image/')) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            previewImage.src = e.target.result;
+            previewImage.style.display = 'block';
+        };
+        reader.readAsDataURL(file);
+    } else {
+        previewImage.style.display = 'none';
+    }
+
+    // Show preview container
+    filePreview.classList.add('visible');
+}
+
+// Hide file preview
+function hideFilePreview() {
+    filePreview.classList.remove('visible');
+    previewImage.style.display = 'none';
+    previewImage.src = '';
+}
+
+// Remove file button handler
+removeFileBtn.addEventListener('click', () => {
+    fileInput.value = '';
+    fileText.textContent = 'Select File (Max 40MB)';
+    fileText.classList.remove('file-selected');
+    submitBtn.disabled = true;
+    hideFilePreview();
+    hideMessage();
+});
+
+// Helper: Get human-readable file type
+function getFileTypeLabel(mimeType) {
+    const typeMap = {
+        'application/pdf': 'PDF',
+        'application/msword': 'Word Document',
+        'application/vnd.openxmlformats-officedocument.wordprocessingml.document': 'Word Document',
+        'application/vnd.oasis.opendocument.text': 'OpenDocument Text',
+        'application/rtf': 'Rich Text Format',
+        'text/plain': 'Plain Text',
+        'application/vnd.ms-excel': 'Excel Spreadsheet',
+        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': 'Excel Spreadsheet',
+        'application/vnd.oasis.opendocument.spreadsheet': 'OpenDocument Spreadsheet',
+        'text/csv': 'CSV File',
+        'application/vnd.ms-powerpoint': 'PowerPoint Presentation',
+        'application/vnd.openxmlformats-officedocument.presentationml.presentation': 'PowerPoint Presentation',
+        'application/vnd.oasis.opendocument.presentation': 'OpenDocument Presentation',
+        'image/jpeg': 'JPEG Image',
+        'image/png': 'PNG Image',
+        'image/bmp': 'BMP Image',
+        'image/gif': 'GIF Image'
+    };
+
+    return typeMap[mimeType] || 'Unknown Type';
+}
+
+// Helper: Format file size
+function formatFileSize(bytes) {
+    if (bytes === 0) return '0 Bytes';
+
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+
+    return Math.round((bytes / Math.pow(k, i)) * 100) / 100 + ' ' + sizes[i];
+}
+
+// ==========================================
+// 11. PWA: Register Service Worker
 // ==========================================
 if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
