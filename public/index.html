@@ -69,6 +69,21 @@
                     <span id="btnText">Convert to PDF</span>
                     <span id="loadingSpinner" class="spinner" style="display: none;"></span>
                 </button>
+
+                <!-- Progress Bar -->
+                <div id="progressContainer" class="progress-container">
+                    <div class="progress-header">
+                        <span class="progress-label">Converting...</span>
+                        <span id="progressPercentage" class="progress-percentage">0%</span>
+                    </div>
+                    <div class="progress-bar-wrapper">
+                        <div id="progressBarFill" class="progress-bar-fill"></div>
+                    </div>
+                    <div class="progress-details">
+                        <span id="progressStatus" class="progress-status">Preparing...</span>
+                        <span id="progressSize" class="progress-size"></span>
+                    </div>
+                </div>
             </form>
         </section>
 
@@ -79,7 +94,7 @@
         <section class="history-section">
             <button id="historyToggle" class="history-toggle">
                 <span class="history-toggle-icon">▶</span>
-                <span>Convert History</span>
+                <span>Conversion History</span>
             </button>
             <div id="historyContent" class="history-content">
                 <ul id="historyList" class="history-list"></ul>

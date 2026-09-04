@@ -8,6 +8,11 @@ const loadingSpinner = document.getElementById('loadingSpinner');
 const uploadForm = document.getElementById('uploadForm');
 const messageArea = document.getElementById('messageArea');
 const messageText = document.getElementById('messageText');
+const progressContainer = document.getElementById('progressContainer');
+const progressPercentage = document.getElementById('progressPercentage');
+const progressBarFill = document.getElementById('progressBarFill');
+const progressStatus = document.getElementById('progressStatus');
+const progressSize = document.getElementById('progressSize');
 
 // 2. Handle saat user memilih file
 fileInput.addEventListener('change', (e) => {
@@ -32,98 +37,130 @@ fileInput.addEventListener('change', (e) => {
 });
 
 // 3. Handle submit form
-uploadForm.addEventListener('submit', async (e) => {
+uploadForm.addEventListener('submit', (e) => {
     e.preventDefault(); // Prevent default form submission
 
     const file = fileInput.files[0];
     if (!file) {
-        showMessage('Silakan pilih file terlebih dahulu', 'error');
+        showMessage('Please select a file first', 'error');
         return;
     }
 
     // Validasi ukuran file di frontend (sekadar UX, validasi sebenarnya di backend)
     const maxSize = 40 * 1024 * 1024; // 40MB
     if (file.size > maxSize) {
-        showMessage(`Ukuran file terlalu besar (${(file.size / 1024 / 1024).toFixed(2)}MB). Maksimal 40MB.`, 'error');
+        showMessage(`File too large (${(file.size / 1024 / 1024).toFixed(2)}MB). Maximum 40MB.`, 'error');
         return;
     }
 
     // Warning untuk file besar (>25MB)
     if (file.size > 25 * 1024 * 1024) {
-        showMessage('⚠️ File besar (>25MB) akan membutuhkan waktu lebih lama untuk dikonversi. Mohon bersabar...', 'info');
+        showMessage('⚠️ Large file (>25MB) will take longer to convert. Please be patient...', 'info');
         // Jangan return, lanjutkan proses
     }
 
-    // Tampilkan loading state
+    // Tampilkan loading state dan progress bar
     setLoadingState(true);
-    showMessage('Mengupload dan mengkonversi file... Mohon tunggu.', 'info');
+    showProgress();
+    updateProgress(0, 'Uploading...');
 
-    try {
-        // Prepare FormData
-        const formData = new FormData();
-        formData.append('file', file);
+    // Prepare FormData
+    const formData = new FormData();
+    formData.append('file', file);
 
-        // Kirim request ke backend
-        const response = await fetch('/api/convert', {
-            method: 'POST',
-            body: formData
-        });
+    // Use XMLHttpRequest for progress tracking
+    const xhr = new XMLHttpRequest();
 
-        // Handle response
-        if (!response.ok) {
-            const errorData = await response.json();
-            throw new Error(errorData.error || `Server error: ${response.status}`);
+    // Track upload progress
+    xhr.upload.addEventListener('progress', (e) => {
+        if (e.lengthComputable) {
+            const percentComplete = (e.loaded / e.total) * 100;
+            updateProgress(percentComplete, 'Uploading...');
         }
+    });
 
-        // Ambil blob dari response
-        const blob = await response.blob();
+    // Handle response
+    xhr.onload = () => {
+        if (xhr.status === 200) {
+            // Conversion complete
+            updateProgress(100, 'Download starting...');
 
-        // Extract filename dari Content-Disposition header
-        const contentDisposition = response.headers.get('Content-Disposition');
-        let filename = 'converted.pdf';
+            // Extract filename from Content-Disposition header
+            const contentDisposition = xhr.getResponseHeader('Content-Disposition');
+            let filename = 'converted.pdf';
 
-        if (contentDisposition) {
-            const filenameMatch = contentDisposition.match(/filename="?([^"]+)"?/);
-            if (filenameMatch && filenameMatch[1]) {
-                filename = filenameMatch[1];
+            if (contentDisposition) {
+                const filenameMatch = contentDisposition.match(/filename="?([^"]+)"?/);
+                if (filenameMatch && filenameMatch[1]) {
+                    filename = filenameMatch[1];
+                }
             }
-        }
 
-        // Trigger download
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = filename;
-        document.body.appendChild(a);
-        a.click();
-        window.URL.revokeObjectURL(url);
-        document.body.removeChild(a);
+            // Create blob and trigger download
+            const blob = new Blob([xhr.response], { type: 'application/pdf' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            window.URL.revokeObjectURL(url);
+            document.body.removeChild(a);
 
-        // Tampilkan pesan sukses
-        showMessage('File berhasil dikonversi dan diunduh!', 'success');
+            // Show success message
+            showMessage('File successfully converted and downloaded!', 'success');
 
-        // Save to history
-        saveHistory(file.name, filename, file.size);
+            // Save to history
+            saveHistory(file.name, filename, file.size);
 
-        // Reset form
-        fileInput.value = '';
-        fileText.textContent = 'Pilih File (Maks 25MB)';
-        fileText.classList.remove('file-selected');
-        submitBtn.disabled = true;
+            // Reset form
+            fileInput.value = '';
+            fileText.textContent = 'Select File (Max 40MB)';
+            fileText.classList.remove('file-selected');
+            submitBtn.disabled = true;
+            hideFilePreview();
 
-    } catch (error) {
-        console.error('[Frontend] Error:', error);
+            // Hide progress bar after 1 second
+            setTimeout(() => {
+                hideProgress();
+            }, 1000);
 
-        // Handle timeout error
-        if (error.name === 'AbortError') {
-            showMessage('Konversi timeout. File mungkin terlalu besar atau korup. Silakan coba lagi.', 'error');
         } else {
-            showMessage(error.message || 'Terjadi kesalahan. Silakan coba lagi.', 'error');
+            // Error handling
+            let errorMessage = 'An error occurred. Please try again.';
+            try {
+                const errorData = JSON.parse(xhr.responseText);
+                errorMessage = errorData.error || errorMessage;
+            } catch (e) {
+                errorMessage = `Server error: ${xhr.status}`;
+            }
+            showMessage(errorMessage, 'error');
+            hideProgress();
         }
-    } finally {
+
         // Matikan loading state
         setLoadingState(false);
-    }
+    };
+
+    // Handle network errors
+    xhr.onerror = () => {
+        showMessage('Network error. Please check your connection and try again.', 'error');
+        hideProgress();
+        setLoadingState(false);
+    };
+
+    // Handle timeout (optional, 5 minutes)
+    xhr.timeout = 300000; // 5 minutes
+    xhr.ontimeout = () => {
+        showMessage('Conversion timeout. File may be too large or corrupted. Please try again.', 'error');
+        hideProgress();
+        setLoadingState(false);
+    };
+
+    // Open and send request
+    xhr.open('POST', '/api/convert', true);
+    xhr.responseType = 'blob';
+    xhr.send(formData);
 });
 
 // 4. Helper: Set loading state
@@ -445,7 +482,36 @@ function formatFileSize(bytes) {
 }
 
 // ==========================================
-// 11. PWA: Register Service Worker
+// 11. Progress Bar Functions
+// ==========================================
+function showProgress() {
+    progressContainer.classList.add('visible');
+}
+
+function hideProgress() {
+    progressContainer.classList.remove('visible');
+    progressBarFill.style.width = '0%';
+    progressPercentage.textContent = '0%';
+    progressStatus.textContent = 'Preparing...';
+    progressSize.textContent = '';
+}
+
+function updateProgress(percent, status) {
+    const roundedPercent = Math.round(percent);
+    progressBarFill.style.width = roundedPercent + '%';
+    progressPercentage.textContent = roundedPercent + '%';
+    progressStatus.textContent = status;
+
+    // Add animation class
+    if (percent > 0 && percent < 100) {
+        progressBarFill.classList.add('animating');
+    } else {
+        progressBarFill.classList.remove('animating');
+    }
+}
+
+// ==========================================
+// 12. PWA: Register Service Worker
 // ==========================================
 if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
