@@ -180,7 +180,31 @@ themeToggle.addEventListener('click', () => {
 });
 
 // ==========================================
-// 8. PWA: Register Service Worker
+// 8. Offline Mode Indicator Logic
+// ==========================================
+const offlineIndicator = document.getElementById('offlineIndicator');
+
+// Fungsi untuk update status indicator
+function updateOnlineStatus() {
+    if (navigator.onLine) {
+        // Online: sembunyikan indicator
+        offlineIndicator.classList.remove('visible');
+    } else {
+        // Offline: tampilkan indicator
+        offlineIndicator.classList.add('visible');
+    }
+}
+
+// Cek status awal saat halaman dimuat
+updateOnlineStatus();
+
+// Listen untuk event online/offline
+window.addEventListener('online', updateOnlineStatus);
+window.addEventListener('offline', updateOnlineStatus);
+
+
+// ==========================================
+// 9. PWA: Register Service Worker
 // ==========================================
 if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {

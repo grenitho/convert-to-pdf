@@ -84,7 +84,8 @@ body {
     width: 100%;
     max-width: 500px;
     text-align: center;
-    position: relative; /* Untuk positioning tombol theme */
+    position: relative;
+    /* Untuk positioning tombol theme */
     transition: background-color 0.3s ease, box-shadow 0.3s ease;
 }
 
@@ -298,4 +299,36 @@ button[type="submit"]:disabled {
 .theme-toggle:hover {
     background-color: var(--input-hover-bg);
     border-color: var(--input-hover-border);
+}
+
+/* =========================================
+   11. Offline Mode Indicator (NEW)
+   ========================================= */
+.offline-indicator {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    background-color: #e74c3c;
+    /* Merah peringatan */
+    color: #ffffff;
+    text-align: center;
+    padding: 12px 20px;
+    font-weight: 600;
+    font-size: 14px;
+    z-index: 9999;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    transform: translateY(-100%);
+    transition: transform 0.3s ease-in-out;
+}
+
+/* Tampilkan indicator saat class 'visible' ditambahkan */
+.offline-indicator.visible {
+    transform: translateY(0);
+}
+
+/* Penyesuaian untuk Dark Mode */
+[data-theme="dark"] .offline-indicator {
+    background-color: #c0392b;
+    color: #ffffff;
 }
