@@ -19,13 +19,13 @@
 
 <body>
     <div id="offlineIndicator" class="offline-indicator">
-        ⚠️ Anda sedang offline. Beberapa fitur mungkin tidak tersedia.
+        ⚠️ You are offline. Some features may not be available.
     </div>
     <main class="container">
         <button id="themeToggle" class="theme-toggle" aria-label="Toggle Dark Mode">🌙</button>
         <header>
             <h1>Convert to PDF</h1>
-            <p>Ubah file Office & Gambar menjadi PDF secara privat dan aman.</p>
+            <p>Convert Office Files and Images to PDF privately and securely.</p>
         </header>
 
         <section class="upload-section">
@@ -36,12 +36,37 @@
                         accept=".doc,.docx,.odt,.rtf,.txt,.xls,.xlsx,.ods,.csv,.ppt,.pptx,.odp,.jpg,.jpeg,.png,.bmp,.gif"
                         required>
                     <label for="fileInput" id="fileLabel">
-                        <span id="fileText">Pilih File (Maks 40MB)</span>
+                        <span id="fileText">Choose File (Max 40MB)</span>
+                        <span class="drag-hint">or drag & drop file here</span>
                     </label>
+
+                    <!-- File Preview Container -->
+                    <div id="filePreview" class="file-preview">
+                        <div class="file-preview-header">
+                            <span class="file-preview-title">File Selected</span>
+                            <button type="button" id="removeFileBtn" class="file-preview-remove"
+                                aria-label="Remove file">×</button>
+                        </div>
+                        <div class="file-preview-details">
+                            <span id="previewName" class="file-preview-name"></span>
+                            <div class="file-preview-meta">
+                                <span class="file-preview-meta-item">
+                                    <span>📄</span>
+                                    <span id="previewType"></span>
+                                </span>
+                                <span class="file-preview-meta-item">
+                                    <span>💾</span>
+                                    <span id="previewSize"></span>
+                                </span>
+                            </div>
+                        </div>
+                        <!-- Image preview (hanya muncul untuk file gambar) -->
+                        <img id="previewImage" class="file-preview-image" style="display: none;" alt="Preview">
+                    </div>
                 </div>
 
                 <button type="submit" id="submitBtn" disabled>
-                    <span id="btnText">Convert ke PDF</span>
+                    <span id="btnText">Convert to PDF</span>
                     <span id="loadingSpinner" class="spinner" style="display: none;"></span>
                 </button>
             </form>
