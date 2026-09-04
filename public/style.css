@@ -332,3 +332,143 @@ button[type="submit"]:disabled {
     background-color: #c0392b;
     color: #ffffff;
 }
+
+/* =========================================
+   12. Download History Section (NEW)
+   ========================================= */
+.history-section {
+    margin-top: 25px;
+    padding-top: 20px;
+    border-top: 1px solid var(--border-color);
+    text-align: left;
+}
+
+.history-toggle {
+    background: none;
+    border: none;
+    color: var(--subheader-color);
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    padding: 8px 12px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.3s ease;
+    width: 100%;
+    justify-content: flex-start;
+}
+
+.history-toggle:hover {
+    background-color: var(--input-hover-bg);
+    color: var(--header-color);
+}
+
+.history-toggle-icon {
+    transition: transform 0.3s ease;
+    font-size: 12px;
+}
+
+.history-toggle.expanded .history-toggle-icon {
+    transform: rotate(90deg);
+}
+
+.history-content {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.4s ease, opacity 0.3s ease;
+    opacity: 0;
+}
+
+.history-content.expanded {
+    max-height: 300px;
+    opacity: 1;
+    margin-top: 15px;
+}
+
+.history-list {
+    list-style: none;
+    max-height: 200px;
+    overflow-y: auto;
+    margin-bottom: 10px;
+}
+
+.history-item {
+    background-color: var(--input-bg);
+    padding: 10px 14px;
+    border-radius: 6px;
+    margin-bottom: 8px;
+    border: 1px solid var(--border-color);
+    transition: all 0.3s ease;
+}
+
+.history-item:hover {
+    background-color: var(--input-hover-bg);
+    border-color: var(--input-hover-border);
+}
+
+.history-item-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+}
+
+.history-item-name {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-color);
+    word-break: break-all;
+    flex: 1;
+}
+
+.history-item-date {
+    font-size: 11px;
+    color: var(--subheader-color);
+    white-space: nowrap;
+}
+
+.history-empty {
+    text-align: center;
+    color: var(--subheader-color);
+    font-size: 13px;
+    font-style: italic;
+    padding: 15px;
+}
+
+.history-clear-btn {
+    background: none;
+    border: 1px solid var(--error-border);
+    color: var(--error-color);
+    font-size: 12px;
+    cursor: pointer;
+    padding: 6px 12px;
+    border-radius: 4px;
+    transition: all 0.3s ease;
+    width: 100%;
+}
+
+.history-clear-btn:hover {
+    background-color: var(--error-bg);
+    border-color: var(--error-color);
+}
+
+/* Scrollbar styling untuk history list */
+.history-list::-webkit-scrollbar {
+    width: 6px;
+}
+
+.history-list::-webkit-scrollbar-track {
+    background: var(--input-bg);
+    border-radius: 3px;
+}
+
+.history-list::-webkit-scrollbar-thumb {
+    background: var(--border-color);
+    border-radius: 3px;
+}
+
+.history-list::-webkit-scrollbar-thumb:hover {
+    background: var(--subheader-color);
+}

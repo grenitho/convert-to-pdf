@@ -102,6 +102,9 @@ uploadForm.addEventListener('submit', async (e) => {
         // Tampilkan pesan sukses
         showMessage('File berhasil dikonversi dan diunduh!', 'success');
 
+        // Save to history
+        saveHistory(file.name, filename, file.size);
+
         // Reset form
         fileInput.value = '';
         fileText.textContent = 'Pilih File (Maks 25MB)';
@@ -202,9 +205,101 @@ updateOnlineStatus();
 window.addEventListener('online', updateOnlineStatus);
 window.addEventListener('offline', updateOnlineStatus);
 
+// ==========================================
+// 9. Download History Logic
+// ==========================================
+const historyToggle = document.getElementById('historyToggle');
+const historyContent = document.getElementById('historyContent');
+const historyList = document.getElementById('historyList');
+const clearHistoryBtn = document.getElementById('clearHistoryBtn');
+
+// Load and render history on page load
+renderHistory();
+
+// Toggle history section expand/collapse
+historyToggle.addEventListener('click', () => {
+    historyToggle.classList.toggle('expanded');
+    historyContent.classList.toggle('expanded');
+});
+
+// Clear all history
+clearHistoryBtn.addEventListener('click', () => {
+    if (confirm('Are you sure you want to clear all history?')) {
+        localStorage.removeItem('conversionHistory');
+        renderHistory();
+    }
+});
+
+// Save conversion to localStorage
+function saveHistory(originalName, pdfName, fileSize) {
+    const history = JSON.parse(localStorage.getItem('conversionHistory') || '[]');
+    
+    const newEntry = {
+        originalName: originalName,
+        pdfName: pdfName,
+        fileSize: fileSize,
+        timestamp: new Date().toISOString()
+    };
+    
+    // Add to beginning of array (newest first)
+    history.unshift(newEntry);
+    
+    // Keep only last 20 entries to prevent localStorage bloat
+    if (history.length > 20) {
+        history.splice(20);
+    }
+    
+    localStorage.setItem('conversionHistory', JSON.stringify(history));
+    
+    // Re-render history if section is expanded
+    if (historyContent.classList.contains('expanded')) {
+        renderHistory();
+    }
+}
+
+// Render history list from localStorage
+function renderHistory() {
+    const history = JSON.parse(localStorage.getItem('conversionHistory') || '[]');
+    
+    if (history.length === 0) {
+        historyList.innerHTML = '<li class="history-empty">No conversion history yet</li>';
+        clearHistoryBtn.style.display = 'none';
+        return;
+    }
+    
+    clearHistoryBtn.style.display = 'block';
+    
+    historyList.innerHTML = history.map(entry => {
+        const date = new Date(entry.timestamp);
+        const formattedDate = date.toLocaleDateString('en-US', { 
+            month: 'short', 
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+        
+        const sizeMB = (entry.fileSize / 1024 / 1024).toFixed(2);
+        
+        return `
+            <li class="history-item">
+                <div class="history-item-info">
+                    <span class="history-item-name">${escapeHtml(entry.originalName)} → ${escapeHtml(entry.pdfName)}</span>
+                    <span class="history-item-date">${formattedDate} • ${sizeMB}MB</span>
+                </div>
+            </li>
+        `;
+    }).join('');
+}
+
+// Helper: Escape HTML to prevent XSS
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
 
 // ==========================================
-// 9. PWA: Register Service Worker
+// 10. PWA: Register Service Worker
 // ==========================================
 if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
