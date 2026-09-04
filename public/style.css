@@ -201,34 +201,43 @@ button[type="submit"]:disabled {
 }
 
 /* =========================================
-   7. Message Area (Error/Success)
+   7. Message Area (Error/Success) - REFINED
    ========================================= */
 .message-area {
-    margin-top: 20px;
-    padding: 15px;
-    border-radius: 8px;
-    font-size: 14px;
+    margin-top: 15px;
+    padding: 0;
+    border-radius: 0;
+    font-size: 13px;
     font-weight: 500;
-    text-align: left;
+    text-align: center;
     word-break: break-word;
+    background-color: transparent !important;
+    border: none !important;
 }
 
 .message-area.error {
-    background-color: var(--error-bg);
-    color: var(--error-color);
-    border: 1px solid var(--error-border);
+    color: #e74c3c;
 }
 
 .message-area.success {
-    background-color: var(--success-bg);
-    color: var(--success-color);
-    border: 1px solid var(--success-border);
+    color: #27ae60;
 }
 
 .message-area.info {
-    background-color: var(--info-bg);
-    color: var(--info-color);
-    border: 1px solid var(--info-border);
+    color: #2980b9;
+}
+
+/* Dark Mode Colors for Messages */
+[data-theme="dark"] .message-area.error {
+    color: #ff6b6b;
+}
+
+[data-theme="dark"] .message-area.success {
+    color: #51cf66;
+}
+
+[data-theme="dark"] .message-area.info {
+    color: #74c0fc;
 }
 
 /* =========================================
@@ -509,6 +518,7 @@ button[type="submit"]:disabled {
         opacity: 0;
         transform: translateY(-10px);
     }
+
     to {
         opacity: 1;
         transform: translateY(0);
@@ -657,9 +667,12 @@ button[type="submit"]:disabled {
 
 /* Animasi untuk progress bar saat loading */
 @keyframes progressPulse {
-    0%, 100% {
+
+    0%,
+    100% {
         opacity: 1;
     }
+
     50% {
         opacity: 0.7;
     }
@@ -670,19 +683,20 @@ button[type="submit"]:disabled {
 }
 
 /* =========================================
-   15. Auto Delete Timer (NEW)
+   15. Auto Delete Timer - REFINED
    ========================================= */
 .delete-timer {
-    margin-top: 15px;
-    padding: 12px 15px;
-    background-color: var(--info-bg);
-    border: 1px solid var(--info-border);
-    border-radius: 6px;
-    display: none; /* Hidden by default */
+    margin-top: 10px;
+    padding: 0;
+    background-color: transparent !important;
+    border: none !important;
+    border-radius: 0;
+    display: none;
     align-items: center;
-    gap: 10px;
-    font-size: 13px;
-    color: var(--info-color);
+    justify-content: center;
+    gap: 6px;
+    font-size: 12px;
+    color: var(--subheader-color);
     animation: fadeIn 0.3s ease;
 }
 
@@ -691,18 +705,19 @@ button[type="submit"]:disabled {
 }
 
 .delete-timer-icon {
-    font-size: 16px;
+    font-size: 14px;
     flex-shrink: 0;
 }
 
 .delete-timer-text {
     flex: 1;
     line-height: 1.4;
+    text-align: center;
 }
 
 .delete-timer-countdown {
-    font-weight: 700;
+    font-weight: 600;
     font-family: 'Courier New', Courier, monospace;
-    font-size: 14px;
-    color: var(--header-color);
+    font-size: 12px;
+    color: var(--text-color);
 }
