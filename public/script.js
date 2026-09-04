@@ -149,7 +149,38 @@ function hideMessage() {
 }
 
 // ==========================================
-// 7. PWA: Register Service Worker
+// 7. Dark Mode Toggle Logic
+// ==========================================
+const themeToggle = document.getElementById('themeToggle');
+
+// Cek preferensi tema yang tersimpan, atau gunakan 'light' sebagai default
+const savedTheme = localStorage.getItem('theme') || 'light';
+
+// Terapkan tema yang tersimpan saat halaman pertama kali dimuat
+if (savedTheme === 'dark') {
+    document.documentElement.setAttribute('data-theme', 'dark');
+    themeToggle.textContent = '☀️'; // Ganti ikon jadi matahari
+}
+
+// Event listener saat tombol toggle diklik
+themeToggle.addEventListener('click', () => {
+    const currentTheme = document.documentElement.getAttribute('data-theme');
+
+    if (currentTheme === 'dark') {
+        // Switch ke Light Mode
+        document.documentElement.removeAttribute('data-theme');
+        localStorage.setItem('theme', 'light');
+        themeToggle.textContent = '🌙';
+    } else {
+        // Switch ke Dark Mode
+        document.documentElement.setAttribute('data-theme', 'dark');
+        localStorage.setItem('theme', 'dark');
+        themeToggle.textContent = '☀️';
+    }
+});
+
+// ==========================================
+// 8. PWA: Register Service Worker
 // ==========================================
 if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
