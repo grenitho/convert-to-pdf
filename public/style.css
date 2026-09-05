@@ -118,13 +118,13 @@ header p {
 #fileInput,
 #mergeFileInput,
 #compressFileInput {
-    display: none;
+    display: none !important;
 }
 
 /* Label yang berfungsi sebagai tombol pilih file */
 #fileLabel,
 #mergeFileLabel,
-#compressFileInput {
+#compressFileLabel {
     display: block;
     padding: 40px 20px;
     border: 2px dashed var(--border-color);
@@ -136,7 +136,7 @@ header p {
 
 #fileLabel:hover,
 #mergeFileLabel:hover,
-#compressFileInput {
+#compressFileLabel {
     border-color: var(--input-hover-border);
     background-color: var(--input-hover-bg);
 }
