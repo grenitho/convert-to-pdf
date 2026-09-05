@@ -136,7 +136,7 @@ header p {
 
 #fileLabel:hover,
 #mergeFileLabel:hover,
-#compressFileLabel {
+#compressFileLabel:hover {
     border-color: var(--input-hover-border);
     background-color: var(--input-hover-bg);
 }
