@@ -114,13 +114,15 @@ header p {
     margin-bottom: 20px;
 }
 
-/* Sembunyikan input file default */
-#fileInput {
+/* Sembunyikan input file default (Convert & Merge) */
+#fileInput,
+#mergeFileInput {
     display: none;
 }
 
 /* Label yang berfungsi sebagai tombol pilih file */
-#fileLabel {
+#fileLabel,
+#mergeFileLabel {
     display: block;
     padding: 40px 20px;
     border: 2px dashed var(--border-color);
@@ -130,7 +132,8 @@ header p {
     transition: all 0.3s ease;
 }
 
-#fileLabel:hover {
+#fileLabel:hover,
+#mergeFileLabel:hover {
     border-color: var(--input-hover-border);
     background-color: var(--input-hover-bg);
 }
