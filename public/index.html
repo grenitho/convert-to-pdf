@@ -32,6 +32,7 @@
         <div class="tabs-container">
             <button type="button" class="tab-btn active" data-target="convert">Convert</button>
             <button type="button" class="tab-btn" data-target="merge">Merge PDF</button>
+            <button type="button" class="tab-btn" data-target="compress">Compress PDF</button>
         </div>
 
         <!-- Convert Section -->
@@ -125,6 +126,61 @@
                     </div>
                     <div class="progress-details">
                         <span id="mergeProgressStatus" class="progress-status">Preparing...</span>
+                    </div>
+                </div>
+            </form>
+        </section>
+
+        <!-- Compress PDF Section -->
+        <section id="compressSection" class="upload-section" style="display: none;">
+            <form id="compressForm" enctype="multipart/form-data">
+                <div class="input-group">
+                    <!-- Input khusus PDF -->
+                    <input type="file" id="compressFileInput" name="file" accept=".pdf" required>
+                    <label for="compressFileInput" id="compressFileLabel">
+                        <span id="compressFileText">Choose PDF File (Max 40MB)</span>
+                        <span class="drag-hint">or drag & drop PDF file here</span>
+                    </label>
+
+                    <!-- Compress File Preview Container -->
+                    <div id="compressFilePreview" class="file-preview">
+                        <div class="file-preview-header">
+                            <span class="file-preview-title">File Selected</span>
+                            <button type="button" id="compressRemoveFileBtn" class="file-preview-remove"
+                                aria-label="Remove file">×</button>
+                        </div>
+                        <div class="file-preview-details">
+                            <span id="compressPreviewName" class="file-preview-name"></span>
+                            <div class="file-preview-meta">
+                                <span class="file-preview-meta-item">
+                                    <span>📄</span>
+                                    <span id="compressPreviewType"></span>
+                                </span>
+                                <span class="file-preview-meta-item">
+                                    <span>💾</span>
+                                    <span id="compressPreviewSize"></span>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <button type="submit" id="compressSubmitBtn" disabled>
+                    <span id="compressBtnText">Compress PDF</span>
+                    <span id="compressLoadingSpinner" class="spinner" style="display: none;"></span>
+                </button>
+
+                <!-- Compress Progress Bar -->
+                <div id="compressProgressContainer" class="progress-container">
+                    <div class="progress-header">
+                        <span class="progress-label">Compressing...</span>
+                        <span id="compressProgressPercentage" class="progress-percentage">0%</span>
+                    </div>
+                    <div class="progress-bar-wrapper">
+                        <div id="compressProgressBarFill" class="progress-bar-fill"></div>
+                    </div>
+                    <div class="progress-details">
+                        <span id="compressProgressStatus" class="progress-status">Preparing...</span>
                     </div>
                 </div>
             </form>

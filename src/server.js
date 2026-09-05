@@ -16,6 +16,7 @@ app.use(express.json());
 // karena akan menyebabkan error saat server dijalankan.
 app.use('/api', require('./routes/convert'));
 app.use('/api', require('./routes/merge'));
+app.use('/api', require('./routes/compress'));
 
 // 4. Handler untuk request yang tidak ditemukan (404)
 app.use((req, res, next) => {

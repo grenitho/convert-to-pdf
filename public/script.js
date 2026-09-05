@@ -558,11 +558,12 @@ function updateTimerDisplay(seconds) {
 }
 
 // ==========================================
-// 11. Tab System & Merge PDF Logic
+// 13. Tab System & Merge PDF Logic
 // ==========================================
 const tabBtns = document.querySelectorAll('.tab-btn');
 const convertSection = document.getElementById('convertSection');
 const mergeSection = document.getElementById('mergeSection');
+const compressSection = document.getElementById('compressSection');
 
 // Tab Switching
 tabBtns.forEach(btn => {
@@ -577,9 +578,15 @@ tabBtns.forEach(btn => {
         if (target === 'convert') {
             convertSection.style.display = 'block';
             mergeSection.style.display = 'none';
-        } else {
+            compressSection.style.display = 'none';
+        } else if (target === 'merge') {
             convertSection.style.display = 'none';
             mergeSection.style.display = 'block';
+            compressSection.style.display = 'none';
+        } else {
+            convertSection.style.display = 'none';
+            mergeSection.style.display = 'none';
+            compressSection.style.display = 'block';
         }
 
         // Clear messages and stop timer when switching tabs
@@ -799,7 +806,169 @@ mergeForm.addEventListener('submit', (e) => {
 });
 
 // ==========================================
-// 13. PWA: Register Service Worker
+// 14. Compress PDF Logic
+// ==========================================
+const compressFileInput = document.getElementById('compressFileInput');
+const compressFileText = document.getElementById('compressFileText');
+const compressSubmitBtn = document.getElementById('compressSubmitBtn');
+const compressFilePreview = document.getElementById('compressFilePreview');
+const compressPreviewName = document.getElementById('compressPreviewName');
+const compressPreviewType = document.getElementById('compressPreviewType');
+const compressPreviewSize = document.getElementById('compressPreviewSize');
+const compressRemoveFileBtn = document.getElementById('compressRemoveFileBtn');
+const compressProgressContainer = document.getElementById('compressProgressContainer');
+const compressProgressPercentage = document.getElementById('compressProgressPercentage');
+const compressProgressBarFill = document.getElementById('compressProgressBarFill');
+const compressProgressStatus = document.getElementById('compressProgressStatus');
+const compressLoadingSpinner = document.getElementById('compressLoadingSpinner');
+const compressBtnText = document.getElementById('compressBtnText');
+const compressForm = document.getElementById('compressForm');
+
+// Handle Compress File Input Change
+compressFileInput.addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    if (file) {
+        compressFileText.textContent = file.name;
+        compressFileText.classList.add('file-selected');
+        compressSubmitBtn.disabled = false;
+
+        // Show preview
+        compressPreviewName.textContent = file.name;
+        compressPreviewType.textContent = getFileTypeLabel(file.type);
+        compressPreviewSize.textContent = formatFileSize(file.size);
+        compressFilePreview.classList.add('visible');
+
+        hideMessage();
+    } else {
+        compressFileText.textContent = 'Choose PDF File (Max 40MB)';
+        compressFileText.classList.remove('file-selected');
+        compressSubmitBtn.disabled = true;
+        compressFilePreview.classList.remove('visible');
+    }
+});
+
+// Compress Remove File
+compressRemoveFileBtn.addEventListener('click', () => {
+    compressFileInput.value = '';
+    compressFileText.textContent = 'Choose PDF File (Max 40MB)';
+    compressFileText.classList.remove('file-selected');
+    compressSubmitBtn.disabled = true;
+    compressFilePreview.classList.remove('visible');
+    hideMessage();
+});
+
+// Handle Compress Form Submission
+compressForm.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const file = compressFileInput.files[0];
+    if (!file) {
+        showMessage('Please select a PDF file first.', 'error');
+        return;
+    }
+    if (file.size > 40 * 1024 * 1024) {
+        showMessage('File too large (Max 40MB).', 'error');
+        return;
+    }
+
+    // UI Loading
+    compressSubmitBtn.disabled = true;
+    compressBtnText.textContent = 'Compressing...';
+    compressLoadingSpinner.style.display = 'inline-block';
+    compressProgressContainer.classList.add('visible');
+    compressProgressStatus.textContent = 'Uploading...';
+    compressProgressBarFill.style.width = '0%';
+    compressProgressPercentage.textContent = '0%';
+    hideMessage();
+
+    const formData = new FormData();
+    formData.append('file', file);
+
+    const xhr = new XMLHttpRequest();
+
+    xhr.upload.addEventListener('progress', (e) => {
+        if (e.lengthComputable) {
+            const percent = Math.round((e.loaded / e.total) * 100);
+            compressProgressBarFill.style.width = percent + '%';
+            compressProgressPercentage.textContent = percent + '%';
+        }
+    });
+
+    xhr.onload = () => {
+        if (xhr.status === 200) {
+            compressProgressStatus.textContent = 'Download starting...';
+            compressProgressBarFill.style.width = '100%';
+            compressProgressPercentage.textContent = '100%';
+
+            const contentDisposition = xhr.getResponseHeader('Content-Disposition');
+            let filename = 'compressed.pdf';
+            if (contentDisposition) {
+                const match = contentDisposition.match(/filename="?([^"]+)"?/);
+                if (match && match[1]) filename = match[1];
+            }
+
+            const blob = new Blob([xhr.response], { type: 'application/pdf' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            window.URL.revokeObjectURL(url);
+            document.body.removeChild(a);
+
+            showMessage('File successfully compressed and downloaded!', 'success');
+
+            // Reset
+            compressFileInput.value = '';
+            compressFileText.textContent = 'Choose PDF File (Max 40MB)';
+            compressFileText.classList.remove('file-selected');
+            compressSubmitBtn.disabled = true;
+            compressFilePreview.classList.remove('visible');
+
+            setTimeout(() => {
+                compressProgressContainer.classList.remove('visible');
+                compressBtnText.textContent = 'Compress PDF';
+                compressLoadingSpinner.style.display = 'none';
+            }, 1500);
+
+        } else {
+            let errorMsg = 'An error occurred during compression.';
+            try {
+                const err = JSON.parse(xhr.responseText);
+                errorMsg = err.error || errorMsg;
+            } catch (e) { }
+            showMessage(errorMsg, 'error');
+            compressProgressContainer.classList.remove('visible');
+            compressSubmitBtn.disabled = false;
+            compressBtnText.textContent = 'Compress PDF';
+            compressLoadingSpinner.style.display = 'none';
+        }
+    };
+
+    xhr.onerror = () => {
+        showMessage('Network error. Please check your connection.', 'error');
+        compressProgressContainer.classList.remove('visible');
+        compressSubmitBtn.disabled = false;
+        compressBtnText.textContent = 'Compress PDF';
+        compressLoadingSpinner.style.display = 'none';
+    };
+
+    xhr.timeout = 300000; // 5 minutes
+    xhr.ontimeout = () => {
+        showMessage('Compression timeout. Please try again.', 'error');
+        compressProgressContainer.classList.remove('visible');
+        compressSubmitBtn.disabled = false;
+        compressBtnText.textContent = 'Compress PDF';
+        compressLoadingSpinner.style.display = 'none';
+    };
+
+    xhr.open('POST', '/api/compress', true);
+    xhr.responseType = 'blob';
+    xhr.send(formData);
+});
+
+// ==========================================
+// 15. PWA: Register Service Worker
 // ==========================================
 if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
