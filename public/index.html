@@ -25,10 +25,17 @@
         <button id="themeToggle" class="theme-toggle" aria-label="Toggle Dark Mode">🌙</button>
         <header>
             <h1>Convert to PDF</h1>
-            <p>Convert Office Files and Images to PDF privately and securely.</p>
+            <p>Convert Office Files and Images to PDF privately and securely</p>
         </header>
 
-        <section class="upload-section">
+        <!-- Tab Navigation -->
+        <div class="tabs-container">
+            <button type="button" class="tab-btn active" data-target="convert">Convert</button>
+            <button type="button" class="tab-btn" data-target="merge">Merge PDF</button>
+        </div>
+
+        <!-- Convert Section -->
+        <section id="convertSection" class="upload-section">
             <form id="uploadForm" enctype="multipart/form-data">
                 <div class="input-group">
                     <!-- Accept attribute dibatasi hanya untuk ekstensi yang kita izini di backend -->
@@ -55,7 +62,7 @@
                                     <span id="previewType"></span>
                                 </span>
                                 <span class="file-preview-meta-item">
-                                    <span>💾</span>
+                                    <span></span>
                                     <span id="previewSize"></span>
                                 </span>
                             </div>
@@ -82,6 +89,42 @@
                     <div class="progress-details">
                         <span id="progressStatus" class="progress-status">Preparing...</span>
                         <span id="progressSize" class="progress-size"></span>
+                    </div>
+                </div>
+            </form>
+        </section>
+
+        <!-- Merge PDF Section -->
+        <section id="mergeSection" class="upload-section" style="display: none;">
+            <form id="mergeForm" enctype="multipart/form-data">
+                <div class="input-group">
+                    <!-- Accept hanya PDF, multiple files, name="files" sesuai multer array -->
+                    <input type="file" id="mergeFileInput" name="files" multiple accept=".pdf" required>
+                    <label for="mergeFileInput" id="mergeFileLabel">
+                        <span id="mergeFileText">Choose PDF Files (Max 10 files, 40MB each)</span>
+                        <span class="drag-hint">or drag & drop PDF files here</span>
+                    </label>
+
+                    <!-- Merge File List Preview -->
+                    <div id="mergeFileList" class="merge-file-list"></div>
+                </div>
+
+                <button type="submit" id="mergeSubmitBtn" disabled>
+                    <span id="mergeBtnText">Merge PDFs</span>
+                    <span id="mergeLoadingSpinner" class="spinner" style="display: none;"></span>
+                </button>
+
+                <!-- Merge Progress Bar -->
+                <div id="mergeProgressContainer" class="progress-container">
+                    <div class="progress-header">
+                        <span class="progress-label">Merging...</span>
+                        <span id="mergeProgressPercentage" class="progress-percentage">0%</span>
+                    </div>
+                    <div class="progress-bar-wrapper">
+                        <div id="mergeProgressBarFill" class="progress-bar-fill"></div>
+                    </div>
+                    <div class="progress-details">
+                        <span id="mergeProgressStatus" class="progress-status">Preparing...</span>
                     </div>
                 </div>
             </form>

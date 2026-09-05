@@ -558,6 +558,247 @@ function updateTimerDisplay(seconds) {
 }
 
 // ==========================================
+// 11. Tab System & Merge PDF Logic
+// ==========================================
+const tabBtns = document.querySelectorAll('.tab-btn');
+const convertSection = document.getElementById('convertSection');
+const mergeSection = document.getElementById('mergeSection');
+
+// Tab Switching
+tabBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+        // Remove active class from all tabs
+        tabBtns.forEach(b => b.classList.remove('active'));
+        // Add active to clicked tab
+        btn.classList.add('active');
+
+        // Show/hide sections
+        const target = btn.getAttribute('data-target');
+        if (target === 'convert') {
+            convertSection.style.display = 'block';
+            mergeSection.style.display = 'none';
+        } else {
+            convertSection.style.display = 'none';
+            mergeSection.style.display = 'block';
+        }
+
+        // Clear messages and stop timer when switching tabs
+        hideMessage();
+        stopDeleteTimer();
+    });
+});
+
+// Merge PDF Variables
+const mergeFileInput = document.getElementById('mergeFileInput');
+const mergeFileText = document.getElementById('mergeFileText');
+const mergeSubmitBtn = document.getElementById('mergeSubmitBtn');
+const mergeFileList = document.getElementById('mergeFileList');
+const mergeProgressContainer = document.getElementById('mergeProgressContainer');
+const mergeProgressPercentage = document.getElementById('mergeProgressPercentage');
+const mergeProgressBarFill = document.getElementById('mergeProgressBarFill');
+const mergeProgressStatus = document.getElementById('mergeProgressStatus');
+const mergeLoadingSpinner = document.getElementById('mergeLoadingSpinner');
+const mergeBtnText = document.getElementById('mergeBtnText');
+const mergeForm = document.getElementById('mergeForm');
+
+// Array to hold selected files (easier to manage add/remove than input.files)
+let selectedMergeFiles = [];
+
+// Handle Merge File Input Change
+mergeFileInput.addEventListener('change', (e) => {
+    const newFiles = Array.from(e.target.files);
+
+    // Filter only PDFs
+    const pdfFiles = newFiles.filter(f =>
+        f.type === 'application/pdf' || f.name.toLowerCase().endsWith('.pdf')
+    );
+
+    // Add to array, avoiding duplicates by name+size
+    pdfFiles.forEach(file => {
+        const isDuplicate = selectedMergeFiles.some(f => f.name === file.name && f.size === file.size);
+        if (!isDuplicate) {
+            selectedMergeFiles.push(file);
+        }
+    });
+
+    // Limit to 10 files
+    if (selectedMergeFiles.length > 10) {
+        showMessage('Maximum 10 files allowed for merging.', 'error');
+        selectedMergeFiles = selectedMergeFiles.slice(0, 10);
+    }
+
+    updateMergeUI();
+});
+
+// Update Merge UI based on selected files
+function updateMergeUI() {
+    if (selectedMergeFiles.length > 0) {
+        mergeFileText.textContent = `${selectedMergeFiles.length} File(s) Selected`;
+        mergeFileText.classList.add('file-selected');
+        mergeSubmitBtn.disabled = false;
+    } else {
+        mergeFileText.textContent = 'Choose PDF Files (Max 10 files, 40MB each)';
+        mergeFileText.classList.remove('file-selected');
+        mergeSubmitBtn.disabled = true;
+    }
+    renderMergeFileList();
+}
+
+// Render the list of selected merge files
+function renderMergeFileList() {
+    mergeFileList.innerHTML = '';
+    selectedMergeFiles.forEach((file, index) => {
+        const item = document.createElement('div');
+        item.className = 'merge-file-item';
+        item.innerHTML = `
+            <span class="merge-file-name">${escapeHtml(file.name)}</span>
+            <span class="merge-file-size">${formatFileSize(file.size)}</span>
+            <button type="button" class="merge-file-remove" data-index="${index}" aria-label="Remove file">×</button>
+        `;
+        mergeFileList.appendChild(item);
+    });
+
+    // Add event listeners to remove buttons
+    document.querySelectorAll('.merge-file-remove').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            const index = parseInt(e.target.getAttribute('data-index'));
+            selectedMergeFiles.splice(index, 1);
+            // Reset input value to allow re-adding the same file if needed
+            mergeFileInput.value = '';
+            updateMergeUI();
+        });
+    });
+}
+
+// Handle Merge Form Submission
+mergeForm.addEventListener('submit', (e) => {
+    e.preventDefault();
+
+    if (selectedMergeFiles.length < 2) {
+        showMessage('Please select at least 2 PDF files to merge.', 'error');
+        return;
+    }
+
+    // Validate sizes (Max 40MB per file)
+    const maxSize = 40 * 1024 * 1024;
+    for (const file of selectedMergeFiles) {
+        if (file.size > maxSize) {
+            showMessage(`File "${file.name}" is too large (Max 40MB).`, 'error');
+            return;
+        }
+    }
+
+    // UI Updates: Loading state
+    mergeSubmitBtn.disabled = true;
+    mergeBtnText.textContent = 'Merging...';
+    mergeLoadingSpinner.style.display = 'inline-block';
+    mergeProgressContainer.classList.add('visible');
+    mergeProgressStatus.textContent = 'Uploading...';
+    mergeProgressBarFill.style.width = '0%';
+    mergeProgressPercentage.textContent = '0%';
+    hideMessage();
+
+    // Prepare FormData
+    const formData = new FormData();
+    selectedMergeFiles.forEach(file => {
+        formData.append('files', file);
+    });
+
+    // Use XMLHttpRequest for progress tracking
+    const xhr = new XMLHttpRequest();
+
+    // Track upload progress
+    xhr.upload.addEventListener('progress', (e) => {
+        if (e.lengthComputable) {
+            const percent = Math.round((e.loaded / e.total) * 100);
+            mergeProgressBarFill.style.width = percent + '%';
+            mergeProgressPercentage.textContent = percent + '%';
+        }
+    });
+
+    // Handle response
+    xhr.onload = () => {
+        if (xhr.status === 200) {
+            mergeProgressStatus.textContent = 'Download starting...';
+            mergeProgressBarFill.style.width = '100%';
+            mergeProgressPercentage.textContent = '100%';
+
+            // Extract filename
+            const contentDisposition = xhr.getResponseHeader('Content-Disposition');
+            let filename = 'merged.pdf';
+            if (contentDisposition) {
+                const match = contentDisposition.match(/filename="?([^"]+)"?/);
+                if (match && match[1]) filename = match[1];
+            }
+
+            // Trigger download
+            const blob = new Blob([xhr.response], { type: 'application/pdf' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            window.URL.revokeObjectURL(url);
+            document.body.removeChild(a);
+
+            showMessage('Files successfully merged and downloaded!', 'success');
+
+            // Reset form
+            selectedMergeFiles = [];
+            mergeFileInput.value = '';
+            updateMergeUI();
+
+            // Hide progress after 1.5 seconds
+            setTimeout(() => {
+                mergeProgressContainer.classList.remove('visible');
+                mergeSubmitBtn.disabled = false;
+                mergeBtnText.textContent = 'Merge PDFs';
+                mergeLoadingSpinner.style.display = 'none';
+            }, 1500);
+
+        } else {
+            // Error handling
+            let errorMsg = 'An error occurred during merging.';
+            try {
+                const err = JSON.parse(xhr.responseText);
+                errorMsg = err.error || errorMsg;
+            } catch (e) { }
+
+            showMessage(errorMsg, 'error');
+            mergeProgressContainer.classList.remove('visible');
+            mergeSubmitBtn.disabled = false;
+            mergeBtnText.textContent = 'Merge PDFs';
+            mergeLoadingSpinner.style.display = 'none';
+        }
+    };
+
+    // Handle network errors
+    xhr.onerror = () => {
+        showMessage('Network error. Please check your connection.', 'error');
+        mergeProgressContainer.classList.remove('visible');
+        mergeSubmitBtn.disabled = false;
+        mergeBtnText.textContent = 'Merge PDFs';
+        mergeLoadingSpinner.style.display = 'none';
+    };
+
+    // Handle timeout (5 minutes)
+    xhr.timeout = 300000;
+    xhr.ontimeout = () => {
+        showMessage('Merging timeout. Please try again with smaller files.', 'error');
+        mergeProgressContainer.classList.remove('visible');
+        mergeSubmitBtn.disabled = false;
+        mergeBtnText.textContent = 'Merge PDFs';
+        mergeLoadingSpinner.style.display = 'none';
+    };
+
+    // Send request
+    xhr.open('POST', '/api/merge', true);
+    xhr.responseType = 'blob';
+    xhr.send(formData);
+});
+
+// ==========================================
 // 13. PWA: Register Service Worker
 // ==========================================
 if ('serviceWorker' in navigator) {

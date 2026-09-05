@@ -15,6 +15,7 @@ app.use(express.json());
 // JANGAN uncomment baris di bawah ini sebelum file routes/convert.js dibuat, 
 // karena akan menyebabkan error saat server dijalankan.
 app.use('/api', require('./routes/convert'));
+app.use('/api', require('./routes/merge'));
 
 // 4. Handler untuk request yang tidak ditemukan (404)
 app.use((req, res, next) => {

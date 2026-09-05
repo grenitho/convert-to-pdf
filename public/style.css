@@ -722,3 +722,113 @@ button[type="submit"]:disabled {
     font-size: 12px;
     color: var(--text-color);
 }
+
+/* =========================================
+   16. Tab System & Merge PDF UI (NEW)
+   ========================================= */
+.tabs-container {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 25px;
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 10px;
+}
+
+.tab-btn {
+    background: transparent;
+    border: none;
+    padding: 8px 16px;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--subheader-color);
+    cursor: pointer;
+    border-radius: 6px 6px 0 0;
+    transition: all 0.3s ease;
+    border-bottom: 3px solid transparent;
+}
+
+.tab-btn:hover {
+    color: var(--header-color);
+    background-color: var(--input-bg);
+}
+
+.tab-btn.active {
+    color: var(--btn-bg);
+    border-bottom-color: var(--btn-bg);
+}
+
+/* Merge File List Styling */
+.merge-file-list {
+    margin-top: 15px;
+    max-height: 200px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.merge-file-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: var(--input-bg);
+    padding: 10px 14px;
+    border-radius: 6px;
+    border: 1px solid var(--border-color);
+    transition: all 0.3s ease;
+}
+
+.merge-file-item:hover {
+    border-color: var(--input-hover-border);
+}
+
+.merge-file-name {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-color);
+    word-break: break-all;
+    flex: 1;
+    margin-right: 10px;
+}
+
+.merge-file-size {
+    font-size: 12px;
+    color: var(--subheader-color);
+    margin-right: 10px;
+    white-space: nowrap;
+}
+
+.merge-file-remove {
+    background: none;
+    border: none;
+    color: var(--error-color);
+    font-size: 16px;
+    cursor: pointer;
+    padding: 0 5px;
+    border-radius: 4px;
+    transition: background-color 0.3s ease;
+}
+
+.merge-file-remove:hover {
+    background-color: var(--error-bg);
+}
+
+/* Scrollbar styling for merge list */
+.merge-file-list::-webkit-scrollbar {
+    width: 6px;
+}
+
+.merge-file-list::-webkit-scrollbar-track {
+    background: var(--input-bg);
+    border-radius: 3px;
+}
+
+.merge-file-list::-webkit-scrollbar-thumb {
+    background: var(--border-color);
+    border-radius: 3px;
+}
+
+.merge-file-list::-webkit-scrollbar-thumb:hover {
+    background: var(--subheader-color);
+}
